@@ -2,7 +2,9 @@ import './css/App.css';
 import gotopIcon from './images/btn_goTop.png'
 import Buttons from './components/Buttons';
 import Dropdown from './components/Dropdown';
-import Pagination from './components/Pagination';
+// import Pagination from './components/Pagination';
+import Pagination from './components/PaginationNew';
+
 import Card from './components/Card';
 import React,{useState, useEffect} from "react";
 // import 'materialize-css';
@@ -18,8 +20,27 @@ const App = () =>{
       isLoaded: false,
       itemZones:[], //宣告一個新的陣列(不重複區域)
       cardsByZone:[], //宣告一個新的陣列(下拉選單和按鈕撈到的值跟父層 API 資料做比對)
-      currentZone:'請選擇行政區'
+      currentZone:'請選擇行政區',
     });
+    const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(4);
+
+  
+
+   // Change page
+   const paginate = (pageNumber,event) => {
+     setCurrentPage(pageNumber);
+    //  console.log('test',event.target);
+     event.target.className ='page active';
+     let list = document.querySelectorAll('.page a');
+     list.forEach(element => {
+       if(element.textContent !==event.target.textContent){
+        element.className ='';
+       }
+        console.log(element);
+     });
+    
+  }
 
 //scroll 效果
 useEffect(() => {
@@ -36,6 +57,7 @@ useEffect(() => {
     window.removeEventListener("scroll", handleScroll);
   };
 }, []);
+
 
 //API 資料
 // 初始值
@@ -67,6 +89,7 @@ useEffect(()=>{
       )
 },[]);
 
+
 const getCurrentZone =(zone) =>{
     // console 第一個變數 'getCurrentZone' 代表是子層傳給父層撈到的值(第一個變數好辨認是哪邊產生的值)
     console.log('getCurrentZone',zone);
@@ -84,6 +107,8 @@ const getCurrentZone =(zone) =>{
         })
 
       });    
+
+
 }
 
 const scrollOnTop =(e)=>{
@@ -113,6 +138,13 @@ const scrollOnTop =(e)=>{
 }
 // const { cards } = state;
 const { cards,itemZones,cardsByZone,currentZone} = state;
+// const { currentPage} = currentPage;
+// const { postsPerPage} = postsPerPage;
+
+
+const indexOfLastPost = currentPage * postsPerPage;
+const indexOfFirstPost = indexOfLastPost - postsPerPage;
+const currentPosts = cardsByZone.slice(indexOfFirstPost, indexOfLastPost);
 
 return (
     <div className="App">
@@ -148,7 +180,7 @@ return (
             <h2 className="title-main">{currentZone}</h2>
             <ul className="list">
 
-            {cardsByZone.map(function(card){
+            {currentPosts.map(function(card){
                 return<Card key={card.ID} item={card}/>
                   // 通常 map 要加上 key (固定值)
 
@@ -173,7 +205,12 @@ return (
         </div>
         
         
-        <Pagination/>
+        <Pagination
+        postsPerPage={postsPerPage}
+        totalPosts={cardsByZone.length}
+        paginate={paginate}
+        className="page"
+      />
         {/* <ul className="page">
            <li><a href="https://hackmd.io/xG1tw_nER7Wu3xL1gbGYPQ?both">Prev </a></li>
            <li><a href="#">1</a></li>
